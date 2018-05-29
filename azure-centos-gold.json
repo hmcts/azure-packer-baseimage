@@ -1,0 +1,48 @@
+{
+  "variables": 
+  {
+    "azure_client_id": "{{ env `AZURE_CLIENT_ID` }}",
+    "azure_client_secret": "{{ env `AZURE_CLIENT_SECRET` }}",
+    "azure_subscription_id": "",
+    "azure_resource_group_name": "",
+    "azure_storage_account_name": "",
+    "azure_tenant_id": "{{ env `AZURE_TENANT_ID` }}"
+  },
+  "builders":
+  [
+    {
+      "type": "azure-arm",
+      "client_id": "{{ user `azure_client_id` }}",
+      "client_secret": "{{ user `azure_client_secret` }}",
+      "resource_group_name": "{{user `azure_resource_group_name`}}",
+      "storage_account": "{{user `azure_storage_account_name`}}",
+      "subscription_id": "{{ user `azure_subscription_id`}}",
+      "tenant_id": "{{ user `azure_tenant_id`}}",
+      "capture_container_name": "autobuilds",
+      "capture_name_prefix": "packer",
+      "virtual_network_name": "",
+      "virtual_network_subnet_name": "",
+      "virtual_network_resource_group_name": "",
+      "os_type": "Linux",
+      "image_publisher": "OpenLogic",
+      "image_offer": "CentOS",
+      "image_sku": "7.4",
+      "azure_tags": {
+        "owner": "devops"
+      },
+      "location": "UK South",
+      "vm_size": "Standard_DS2_v2"
+    }
+  ],
+  "provisioners":
+  [
+    {
+      "type": "ansible",
+      "playbook_file": "bootstrap-role/run_bootstrap.yml"
+    },
+    {
+      "type": "shell",
+      "inline": ["echo 'Bootstrap finished, running update.'","sudo yum update -y","sudo /usr/sbin/waagent -force -deprovision && sudo userdel -f -r packer && export HISTSIZE=0 && sync"]
+    }
+  ]
+}
